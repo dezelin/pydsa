@@ -19,6 +19,10 @@ class Stack(object):
         """ Pops the element from the top """
         return self.items.pop()
 
+    def peek(self):
+        """ Peek next element """
+        return self.items[self.size() - 1]
+
     def size(self):
         """ Returns the size of the stack """
         return len(self.items)
@@ -58,6 +62,20 @@ class TestStack(unittest.TestCase):
             assert x == i
 
         assert stack.items == []
+
+    def test_peek(self):
+        s = Stack()
+        assert s.items == []
+
+        for i in xrange(1, 10):
+            s.push(i)
+
+        assert s.items == [i for i in xrange(1, 10)]
+
+        for i in xrange(9, 0, -1):
+            assert s.peek() == s.pop()
+
+        assert s.items == []
 
     def test_size(self):
         stack = Stack()
