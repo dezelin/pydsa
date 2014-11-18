@@ -11,7 +11,7 @@ def quick_sort_helper(list, first, last):
     if last <= first:
         return
 
-    p = quick_sort_partition(list, first, last);
+    p = quick_sort_partition(list, first, last)
     quick_sort_helper(list, first, p - 1)
     quick_sort_helper(list, p + 1, last)
 
