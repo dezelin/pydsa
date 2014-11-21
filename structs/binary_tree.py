@@ -33,6 +33,9 @@ class TreeNode(object):
     def is_right_child(self):
         return self.parent is not None and self.parent.right == self
 
+    def is_root(self):
+        return self.parent is None
+
     def has_both_children(self):
         return self.left is not None and self.right is not None
 
@@ -47,52 +50,52 @@ class BinaryTree(object):
     """ Implements Binary tree """
 
     def __init__(self):
-        self.__root = None
-        self.__size = 0
+        self._root = None
+        self._size = 0
 
     def __get__item(self, k):
         return self.get(k)
 
     def __iter__(self):
-        return self.__root.__iter__()
+        return self._root.__iter__()
 
     def __set_item__(self, k, v):
         self.add(k, v)
 
     def add(self, k, v):
-        if self.__root is None:
-            self.__root = TreeNode(k, v)
+        if self._root is None:
+            self._root = TreeNode(k, v)
         else:
-            self.__add(k, v, self.__root)
+            self.__add(k, v, self._root)
 
-        self.__size += 1
+        self._size += 1
 
     def get(self, k):
-        n = self.__get(k, self.__root)
+        n = self.__get(k, self._root)
         if n is None:
             return None
 
         return n.value
 
     def is_empty(self):
-        return self.__size == 0
+        return self._size == 0
 
     def remove(self, k):
-        if self.__size > 1:
-            n = self.__get(k, self.__root)
+        if self._size > 1:
+            n = self.__get(k, self._root)
             if n is None:
                 raise KeyError()
 
             self.__remove(n)
-            self.__size -= 1
-        elif self.size == 1 and self.__root.value == k:
-            self.__root = None
-            self.__size = 0
+            self._size -= 1
+        elif self._size == 1 and self._root.value == k:
+            self._root = None
+            self._size = 0
         else:
             raise KeyError()
 
     def size(self):
-        return self.__size
+        return self._size
 
     #
     # Private methods
@@ -135,7 +138,7 @@ class BinaryTree(object):
             self.__splice_node(succ)
             n.key = succ.key
             n.value = succ.value
-            self.__size -= 1
+            self._size -= 1
         else:
             if n.has_left_child():
                 if n.is_left_child():
@@ -144,7 +147,7 @@ class BinaryTree(object):
                 elif n.is_right_child():
                     n.parent.right = n.left
                     n.left.parent = n.parent
-                else:  # root
+                else:  # _root
                     n.key = n.left.key
                     n.value = n.left.value
                     n.left = n.left.left
@@ -156,7 +159,7 @@ class BinaryTree(object):
                 elif n.is_right_child():
                     n.parent.right = n.right
                     n.right.parent = n.parent
-                else:  # root
+                else:  # _root
                     n.key = n.right.key
                     n.value = n.right.value
                     n.left = n.right.left
@@ -171,8 +174,8 @@ class TestBinaryTree(unittest.TestCase):
 
     def test__init__(self):
         h = BinaryTree()
-        assert h._BinaryTree__root is None
-        assert h._BinaryTree__size == 0
+        assert h._root is None
+        assert h._size == 0
 
     def test_add(self):
         for _ in xrange(100):
