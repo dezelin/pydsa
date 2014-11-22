@@ -27,15 +27,15 @@ class TreeNode(object):
             for x in self.right:
                 yield x
 
-    def _print(self, level = 0):
+    def print_ascii(self, level=0):
         print "\t" * level + repr(self.key) + "\n"
         if self.left is not None:
-            self.left._print(level + 1)
+            self.left.print_ascii(level + 1)
         else:
             print "\t" * (level + 1) + "None\n"
 
         if self.right is not None:
-            self.right._print(level + 1)
+            self.right.print_ascii(level + 1)
         else:
             print "\t" * (level + 1) + "None\n"
 
