@@ -14,6 +14,9 @@ class TreeNode(object):
         self.value = v
 
     def __iter__(self):
+        if self is None:
+            return
+
         if self.has_left_child():
             for x in self.left:
                 yield x
@@ -66,12 +69,12 @@ class BinaryTree(object):
         if self._root is None:
             self._root = TreeNode(k, v)
         else:
-            self.__add(k, v, self._root)
+            self._add(k, v, self._root)
 
         self._size += 1
 
     def get(self, k):
-        n = self.__get(k, self._root)
+        n = self._get(k, self._root)
         if n is None:
             return None
 
@@ -82,11 +85,12 @@ class BinaryTree(object):
 
     def remove(self, k):
         if self._size > 1:
-            n = self.__get(k, self._root)
+            n = self._get(k, self._root)
+            print n.key
             if n is None:
                 raise KeyError()
 
-            self.__remove(n)
+            self._remove(n)
             self._size -= 1
         elif self._size == 1 and self._root.value == k:
             self._root = None
@@ -101,44 +105,62 @@ class BinaryTree(object):
     # Private methods
     #
 
-    def __add(self, k, v, n):
+    def _add(self, k, v, n):
         if k < n.value:
             if n.has_left_child():
-                self.__add(k, v, n.left)
+                self._add(k, v, n.left)
             else:
                 n.left = TreeNode(k, v, n)
         else:
             if n.has_right_child():
-                self.__add(k, v, n.right)
+                self._add(k, v, n.right)
             else:
                 n.right = TreeNode(k, v, n)
 
-    def __get(self, k, n):
+    def _find_succ(self, n):
+        succ = None
+        if n.has_right_child():
+            succ = self._find_min(n.right)
+        else:
+            if n.parent:
+                if n.is_left_child():
+                    succ = n.parent
+                else:
+                    n.parent.right = None
+                    succ = self._find_succ(n.parent)
+                    n.parent.right = self
+
+        return succ
+
+    def _find_min(self, n):
+        m = n
+        while m.has_left_child():
+            m = m.left
+
+        return m
+
+    def _get(self, k, n):
         if n is None:
             return None
 
         if k < n.value:
-            return self.__get(k, n.left)
+            return self._get(k, n.left)
         elif k > n.value:
-            return self.__get(k, n.right)
+            return self._get(k, n.right)
         else:
             return n
 
-    def __remove(self, k, n):
+    def _remove(self, n):
         if n.is_leaf():
             if n.is_left_child():
                 n.parent.left = None
             else:
                 n.parent.right = None
         elif n.has_both_children():
-            succ = n.right
-            while succ.has_left():
-                succ = succ.left
-
-            self.__splice_node(succ)
+            succ = self._find_succ(n)
+            self._splice_node(succ)
             n.key = succ.key
             n.value = succ.value
-            self._size -= 1
         else:
             if n.has_left_child():
                 if n.is_left_child():
@@ -150,8 +172,13 @@ class BinaryTree(object):
                 else:  # _root
                     n.key = n.left.key
                     n.value = n.left.value
+                    n.right = n.left.right
                     n.left = n.left.left
-                    n.right = n.right.right
+                    if n.has_left_child():
+                        n.left.parent = n
+
+                    if n.has_right_child():
+                        n.right.parent = n
             else:
                 if n.is_left_child():
                     n.parent.left = n.right
@@ -164,9 +191,32 @@ class BinaryTree(object):
                     n.value = n.right.value
                     n.left = n.right.left
                     n.right = n.right.right
+                    if n.has_left_child():
+                        n.left.parent = n
 
-        def __splice_node(self, n):
-            pass
+                    if n.has_right_child():
+                        n.right.parent = n
+
+    def _splice_node(self, n):
+        if n.is_leaf():
+            if n.is_left_child():
+                n.parent.left = None
+            else:
+                n.parent.right = None
+        elif n.has_left_child():
+            if n.is_left_child():
+                n.parent.left = n.left
+            else:
+                n.parent.right = n.left
+
+            n.left.parent = n.parent
+        elif n.has_right_child():
+            if n.is_left_child():
+                n.parent.left = n.right
+            else:
+                n.parent.right = n.right
+
+            n.right.parent = n.parent
 
 
 class TestBinaryTree(unittest.TestCase):
@@ -179,25 +229,45 @@ class TestBinaryTree(unittest.TestCase):
 
     def test_add(self):
         for _ in xrange(100):
-            h = BinaryTree()
+            t = BinaryTree()
             l = [random.randrange(1000) for _ in xrange(100)]
 
-            assert h.size() == 0
-            assert h.is_empty()
+            assert t.size() == 0
+            assert t.is_empty()
 
             for x in l:
-                h.add(x, x)
+                t.add(x, x)
 
-            assert h.size() == len(l)
-            assert not h.is_empty()
+            assert t.size() == len(l)
+            assert not t.is_empty()
 
             for x in l:
-                assert x == h.get(x)
+                assert x == t.get(x)
 
-            ll = [x for x in h]
+            ll = [x for x in t]
 
             assert len(l) == len(ll)
             assert ll == sorted(l)
+
+    def test_remove(self):
+        for _ in xrange(100):
+            t = BinaryTree()
+            l = [random.randrange(1000) for _ in xrange(10)]
+
+            assert t.size() == 0
+            assert t.is_empty()
+
+            for x in l:
+                t.add(x, x)
+
+            assert t.size() == len(l)
+            assert not t.is_empty()
+
+            for x in l:
+                t.remove(x)
+
+            assert t.size() == 0
+
 
 if __name__ == "__main__":
     unittest.main(module="binary_tree", exit=False)
